@@ -11,13 +11,12 @@ import threading
 import pyshark
 from os import error
 
-wait_hours = 12  #Stop for 12 hours and then run again
-run_hours = 1/60    #We will run ngrep for an hour. The nth run will be dumped to net_log_n.txt
+wait_hours = 12  
+run_hours = 1/60   
 run_time_limit = 100 
 
 SIZE=1024
-PORT = 1234 
-
+PORT = 4456 
 
 def hash_file(path):
     f = open(path, "rb").read(SIZE)
@@ -30,7 +29,6 @@ def log(message, error=False):
         logging.info(message)
     else:
         logging.error(message)
-
 
 
 def handle_client(connection, addr, id, f):
@@ -49,23 +47,18 @@ def handle_client(connection, addr, id, f):
         capture.close()
 
     t = threading.Thread(target=capture)
-    #t.start()
-    #print('Starting pyshark')
+  
+    print('comenzando pyshark')
     
-    #Saying hi
     send(str(id))
     
-    #Sending file hash
     send(hash_code) 
 
-    #waiting for confirmation
     print(receive())
 
-    #sending file
     start_time = time.time()
     connection.send(f) 
 
-    #waiting for the file transfer result
     result = receive()
     total_time = time.time() - start_time
 
@@ -76,25 +69,25 @@ def handle_client(connection, addr, id, f):
     connection.close()
     log('Total transference time for client '+id+':'+str(total_time))
     
-    #print('Killing pyshark')
+    print('terminando pyshark')
     
-    print('done')
+    print('hecho')
 
 
 
 while True:
     
-    clients = int(input("Specify the number of concurrent clients to receive:"))
-    print("Choose the file to send:")
+    clients = int(input("Numero de clientes a recibir:"))
+    print("Escoja el tamanio del archivo:")
 
-    file_name=input("0 for 100 MB\n1 for 250MB\n")
+    file_name=input("0 para 100 MB\n1 para 250MB\n")
     if file_name == '0':
         file_size = '100MB'
-        file_name = 'small'
-        #file_name = 'test.txt'
+        file_name = 'archivo100'
+
     else:
         file_size = '250MB'
-        file_name = 'big'
+        file_name = 'archivo250'
 
     f, hash_code = hash_file(file_name)
     print("Hash:", hash_code)
@@ -102,10 +95,10 @@ while True:
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     host = socket.gethostname()
     host = socket.gethostbyname(host + ".local")
-    print('Listening on ip ', host)
+    print('Escuchando en ip ', host)
     server_socket.bind((host, PORT)) 
     server_socket.listen(clients)
-    print('Bind done')
+    print('Bind hecho')
     threads = []
     op = True
     i = 0

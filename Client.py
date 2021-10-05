@@ -6,14 +6,10 @@ import logging
 import time
 
 SIZE=1024
-FOLDER="ArchivosRecibidos"
 
-FOLDER+="/"
+FOLDER="ArchivosRecibidos/"
 
-#host = "192.168.0.4"
-#host = socket.gethostname() 
-
-port = 1234 
+port = 4456 
 
 def hash_file(f):
     hash_object = hashlib.md5()
@@ -22,7 +18,7 @@ def hash_file(f):
 
 
 def save_file(id, data):
-    file = open(FOLDER+id+'-Prueba-'+str(clients)+'.txt', "wb")
+    file = open('Cliente'+FOLDER+id+'-Prueba-'+str(clients)+'.txt', "wb")
     file.write(data)
 
 def log(message, error=False):
@@ -32,14 +28,12 @@ def log(message, error=False):
         logging.error(message)
 
 while True:
-    hr = input("Do you wanna use the host name as host ip? (Y|N):")
+
     host = socket.gethostname()
     host = socket.gethostbyname(host + ".local")
 
-    if hr == 'N' or hr == 'n' or hr=='no':
-        host = input("Specify the host ip:")
     global clients
-    clients = int(input("Specify the number of concurrent clients to send:"))
+    clients = int(input("Numero de clientes a enviar:"))
 
     def connect_client():
 
@@ -51,22 +45,18 @@ while True:
 
         connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         connection.connect((host, port)) 
-        print("Connected")
-        print("Waiting for confirmation")
+        print("Conecto")
+        print("Esperando la conexion")
 
-        #Receiving connetion confirmation
         id = receive()
         log('Client number: '+id+' connected to the server')
         print('Confirmation received id:', id)
 
-        #Waiting for the hash code
         received_hash_code = receive()
         print('Client '+id+ ' - hash received:', received_hash_code)
-
-        #Sending confirmation
+  
         send('Client '+id+ ' - Hash received')
 
-        #Waiting for the file
         start_time = time.time()
         data = connection.recv(SIZE)
         generated_hash_code = hash_file(data)
